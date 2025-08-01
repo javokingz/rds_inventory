@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name="home"),
     path('api/rds-data/', views.get_rds_data_ajax, name="rds_data_ajax"),
+    path('instance/<str:instance_id>/', views.instance_details, name="instance_details"),
 ]

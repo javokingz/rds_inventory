@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Detalles de Instancia RDS - {{ instance.DBInstanceIdentifier }}</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="/" class="brand-link">
+                <i class="fas fa-database brand-image img-circle elevation-3" style="opacity: .8"></i>
+                <span class="brand-text font-weight-light">RDS Dashboard</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/?profile={{ profile_name }}" class="nav-link active">
+                                <i class="nav-icon fas fa-arrow-left"></i>
+                                <p>Volver al Dashboard</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- /.sidebar-menu -->
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>
+                                <i class="fas fa-database"></i>
+                                {{ instance.DBInstanceIdentifier }}
+                                {% if instance.DBInstanceStatus == 'available' %}
+                                <span class="badge badge-success">{{ instance.DBInstanceStatus }}</span>
+                                {% elif instance.DBInstanceStatus == 'creating' %}
+                                <span class="badge badge-info">{{ instance.DBInstanceStatus }}</span>
+                                {% elif instance.DBInstanceStatus == 'deleting' %}
+                                <span class="badge badge-danger">{{ instance.DBInstanceStatus }}</span>
+                                {% else %}
+                                <span class="badge badge-secondary">{{ instance.DBInstanceStatus }}</span>
+                                {% endif %}
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                                <li class="breadcrumb-item"><a href="/?profile={{ profile_name }}">RDS</a></li>
+                                <li class="breadcrumb-item active">{{ instance.DBInstanceIdentifier }}</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Información General -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-info-circle"></i> Información General
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Motor:</strong></td>
+                                                    <td>{{ instance.Engine }} {{ instance.EngineVersion }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Clase de Instancia:</strong></td>
+                                                    <td>{{ instance.DBInstanceClass }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Base de Datos:</strong></td>
+                                                    <td>{{ instance.DBName|default:"N/A" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Usuario Maestro:</strong></td>
+                                                    <td>{{ instance.MasterUsername }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Endpoint:</strong></td>
+                                                    <td><code>{{ instance.Endpoint.Address }}:{{ instance.Endpoint.Port }}</code></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Zona de Disponibilidad:</strong></td>
+                                                    <td>{{ instance.AvailabilityZone }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Multi-AZ:</strong></td>
+                                                    <td>
+                                                        {% if instance.MultiAZ %}
+                                                        <span class="badge badge-success">Sí</span>
+                                                        {% else %}
+                                                        <span class="badge badge-secondary">No</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Acceso Público:</strong></td>
+                                                    <td>
+                                                        {% if instance.PubliclyAccessible %}
+                                                        <span class="badge badge-warning">Sí</span>
+                                                        {% else %}
+                                                        <span class="badge badge-success">No</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Métricas de CloudWatch -->
+                    <div class="row">
+                        <!-- CPU -->
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-microchip"></i> Utilización de CPU
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if cpu_chart %}
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-danger">
+                                                <span class="info-box-icon"><i class="fas fa-microchip"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Actual</span>
+                                                    <span class="info-box-number">{{ cpu_stats.current }}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-warning">
+                                                <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Promedio</span>
+                                                    <span class="info-box-number">{{ cpu_stats.avg }}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-info">
+                                                <span class="info-box-icon"><i class="fas fa-arrow-up"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Máximo</span>
+                                                    <span class="info-box-number">{{ cpu_stats.max }}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-success">
+                                                <span class="info-box-icon"><i class="fas fa-arrow-down"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Mínimo</span>
+                                                    <span class="info-box-number">{{ cpu_stats.min }}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <img src="data:image/png;base64,{{ cpu_chart }}" class="img-fluid" alt="CPU Utilization">
+                                    {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> No hay datos de CPU disponibles
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Memoria -->
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-memory"></i> Memoria Libre
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if memory_chart %}
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-success">
+                                                <span class="info-box-icon"><i class="fas fa-memory"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Actual</span>
+                                                    <span class="info-box-number">{{ memory_stats.current }} MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-info">
+                                                <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Promedio</span>
+                                                    <span class="info-box-number">{{ memory_stats.avg }} MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-warning">
+                                                <span class="info-box-icon"><i class="fas fa-arrow-up"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Máximo</span>
+                                                    <span class="info-box-number">{{ memory_stats.max }} MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-danger">
+                                                <span class="info-box-icon"><i class="fas fa-arrow-down"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Mínimo</span>
+                                                    <span class="info-box-number">{{ memory_stats.min }} MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <img src="data:image/png;base64,{{ memory_chart }}" class="img-fluid" alt="Memory Usage">
+                                    {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> No hay datos de memoria disponibles
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Almacenamiento -->
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-hdd"></i> Espacio Libre de Almacenamiento
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if storage_chart %}
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-success">
+                                                <span class="info-box-icon"><i class="fas fa-hdd"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Actual</span>
+                                                    <span class="info-box-number">{{ storage_stats.current }} MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-info">
+                                                <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Promedio</span>
+                                                    <span class="info-box-number">{{ storage_stats.avg }} MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-warning">
+                                                <span class="info-box-icon"><i class="fas fa-arrow-up"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Máximo</span>
+                                                    <span class="info-box-number">{{ storage_stats.max }} MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-danger">
+                                                <span class="info-box-icon"><i class="fas fa-arrow-down"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Mínimo</span>
+                                                    <span class="info-box-number">{{ storage_stats.min }} MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <img src="data:image/png;base64,{{ storage_chart }}" class="img-fluid" alt="Storage Usage">
+                                    {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> No hay datos de almacenamiento disponibles
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conexiones -->
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-network-wired"></i> Conexiones de Base de Datos
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if connection_chart %}
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-primary">
+                                                <span class="info-box-icon"><i class="fas fa-network-wired"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Actual</span>
+                                                    <span class="info-box-number">{{ connection_stats.current }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-info">
+                                                <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Promedio</span>
+                                                    <span class="info-box-number">{{ connection_stats.avg }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-warning">
+                                                <span class="info-box-icon"><i class="fas fa-arrow-up"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Máximo</span>
+                                                    <span class="info-box-number">{{ connection_stats.max }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-success">
+                                                <span class="info-box-icon"><i class="fas fa-arrow-down"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Mínimo</span>
+                                                    <span class="info-box-number">{{ connection_stats.min }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <img src="data:image/png;base64,{{ connection_chart }}" class="img-fluid" alt="Database Connections">
+                                    {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> No hay datos de conexiones disponibles
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="float-right d-none d-sm-inline">
+                RDS Dashboard v1.0
+            </div>
+            <strong>Copyright &copy; 2024</strong> Todos los derechos reservados.
+        </footer>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Auto-refresh cada 5 minutos
+        setTimeout(function() {
+            location.reload();
+        }, 300000); // 5 minutos
+    </script>
+</body>
+</html> 
