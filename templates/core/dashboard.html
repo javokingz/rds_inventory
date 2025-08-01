@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RDS Dashboard - AWS</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="/" class="brand-link">
+                <i class="fas fa-database brand-image img-circle elevation-3" style="opacity: .8"></i>
+                <span class="brand-text font-weight-light">RDS Dashboard</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link active">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- /.sidebar-menu -->
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Dashboard de RDS</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                                <li class="breadcrumb-item active">RDS</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Profile Selection -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-user-cog"></i> Seleccionar Perfil de AWS
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <form method="get" id="profileForm">
+                                        <div class="form-group">
+                                            <label for="profile">Perfil de AWS:</label>
+                                            <select class="form-control" id="profile" name="profile" onchange="this.form.submit()">
+                                                <option value="">Selecciona un perfil...</option>
+                                                {% for profile in profiles %}
+                                                <option value="{{ profile }}" {% if profile == selected_profile %}selected{% endif %}>
+                                                    {{ profile }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error Messages -->
+                    {% if error_message %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-danger alert-dismissible">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                                {{ error_message }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- RDS Instances -->
+                    {% if rds_instances %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-database"></i> Instancias de RDS
+                                        <span class="badge badge-primary ml-2">{{ rds_instances|length }}</span>
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" onclick="refreshData()">
+                                            <i class="fas fa-sync-alt"></i> Actualizar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="rdsTable" class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Identificador</th>
+                                                    <th>Estado</th>
+                                                    <th>Motor</th>
+                                                    <th>Clase</th>
+                                                    <th>Endpoint</th>
+                                                    <th>Zona</th>
+                                                    <th>Multi-AZ</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for instance in rds_instances %}
+                                                <tr>
+                                                    <td>
+                                                        <strong>{{ instance.DBInstanceIdentifier }}</strong>
+                                                        {% if instance.PubliclyAccessible %}
+                                                        <span class="badge badge-warning ml-1">Público</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if instance.DBInstanceStatus == 'available' %}
+                                                        <span class="badge badge-success">{{ instance.DBInstanceStatus }}</span>
+                                                        {% elif instance.DBInstanceStatus == 'creating' %}
+                                                        <span class="badge badge-info">{{ instance.DBInstanceStatus }}</span>
+                                                        {% elif instance.DBInstanceStatus == 'deleting' %}
+                                                        <span class="badge badge-danger">{{ instance.DBInstanceStatus }}</span>
+                                                        {% else %}
+                                                        <span class="badge badge-secondary">{{ instance.DBInstanceStatus }}</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <i class="fas fa-database"></i>
+                                                        {{ instance.Engine }} {{ instance.EngineVersion }}
+                                                    </td>
+                                                    <td>{{ instance.DBInstanceClass }}</td>
+                                                    <td>
+                                                        {% if instance.Endpoint.Address != 'N/A' %}
+                                                        <code>{{ instance.Endpoint.Address }}:{{ instance.Endpoint.Port }}</code>
+                                                        {% else %}
+                                                        <span class="text-muted">No disponible</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ instance.AvailabilityZone }}</td>
+                                                    <td>
+                                                        {% if instance.MultiAZ %}
+                                                        <span class="badge badge-success">Sí</span>
+                                                        {% else %}
+                                                        <span class="badge badge-secondary">No</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-info" 
+                                                                onclick="showInstanceDetails('{{ instance.DBInstanceIdentifier }}', {{ instance|safe }})">
+                                                            <i class="fas fa-eye"></i> Detalles
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif selected_profile and not error_message %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h5><i class="icon fas fa-info"></i> Información</h5>
+                                No se encontraron instancias de RDS en el perfil seleccionado.
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="float-right d-none d-sm-inline">
+                RDS Dashboard v1.0
+            </div>
+            <strong>Copyright &copy; 2024</strong> Todos los derechos reservados.
+        </footer>
+    </div>
+
+    <!-- Modal para detalles de instancia -->
+    <div class="modal fade" id="instanceModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles de la Instancia RDS</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="instanceModalBody">
+                    <!-- Contenido dinámico -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Inicializar DataTable
+            $('#rdsTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+                },
+                "responsive": true,
+                "autoWidth": false
+            });
+        });
+
+        function showInstanceDetails(instanceId, instanceData) {
+            let modalBody = $('#instanceModalBody');
+            let html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle"></i> Información General</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Identificador:</strong></td><td>${instanceData.DBInstanceIdentifier}</td></tr>
+                            <tr><td><strong>Estado:</strong></td><td>${instanceData.DBInstanceStatus}</td></tr>
+                            <tr><td><strong>Motor:</strong></td><td>${instanceData.Engine} ${instanceData.EngineVersion}</td></tr>
+                            <tr><td><strong>Clase:</strong></td><td>${instanceData.DBInstanceClass}</td></tr>
+                            <tr><td><strong>Base de datos:</strong></td><td>${instanceData.DBName}</td></tr>
+                            <tr><td><strong>Usuario maestro:</strong></td><td>${instanceData.MasterUsername}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-network-wired"></i> Configuración de Red</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Endpoint:</strong></td><td>${instanceData.Endpoint.Address}:${instanceData.Endpoint.Port}</td></tr>
+                            <tr><td><strong>Zona de disponibilidad:</strong></td><td>${instanceData.AvailabilityZone}</td></tr>
+                            <tr><td><strong>Multi-AZ:</strong></td><td>${instanceData.MultiAZ ? 'Sí' : 'No'}</td></tr>
+                            <tr><td><strong>Acceso público:</strong></td><td>${instanceData.PubliclyAccessible ? 'Sí' : 'No'}</td></tr>
+                            <tr><td><strong>VPC ID:</strong></td><td>${instanceData.DBSubnetGroup.VpcId || 'N/A'}</td></tr>
+                            <tr><td><strong>Subnet Group:</strong></td><td>${instanceData.DBSubnetGroup.DBSubnetGroupName || 'N/A'}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-hdd"></i> Almacenamiento</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Almacenamiento asignado:</strong></td><td>${instanceData.AllocatedStorage} GB</td></tr>
+                            <tr><td><strong>Tipo de almacenamiento:</strong></td><td>${instanceData.StorageType}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-shield-alt"></i> Seguridad</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Retención de backup:</strong></td><td>${instanceData.BackupRetentionPeriod} días</td></tr>
+                            <tr><td><strong>Grupos de seguridad:</strong></td><td>${instanceData.VpcSecurityGroups.length}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            modalBody.html(html);
+            $('#instanceModal').modal('show');
+        }
+
+        function refreshData() {
+            const profile = $('#profile').val();
+            if (!profile) {
+                Swal.fire('Error', 'Por favor selecciona un perfil primero', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Actualizando datos...',
+                text: 'Obteniendo información de RDS',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.get('/api/rds-data/', {profile: profile})
+                .done(function(response) {
+                    if (response.error) {
+                        Swal.fire('Error', response.error, 'error');
+                    } else {
+                        location.reload();
+                    }
+                })
+                .fail(function() {
+                    Swal.fire('Error', 'No se pudo actualizar los datos', 'error');
+                });
+        }
+    </script>
+</body>
+</html> 
