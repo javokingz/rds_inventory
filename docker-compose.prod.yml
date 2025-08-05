@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  rds-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: rds-dashboard-prod
+    ports:
+      - "8000:8000"
+    volumes:
+      # Montar configuración de AWS desde el host
+      - ~/.aws:/home/appuser/.aws:ro
+      # Persistir logs
+      - ./logs:/app/logs
+      # Persistir archivos estáticos
+      - ./staticfiles:/app/staticfiles
+    environment:
+      - DJANGO_SETTINGS_MODULE=rds_dashboard.settings_prod
+      - PYTHONUNBUFFERED=1
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-q$)yfv)y5zx86jf5=#=lw@3%%nlnu7rsztk%jh2(jh_5z(kt&!}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - CREATE_SUPERUSER=${CREATE_SUPERUSER:-false}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - rds-dashboard-network
+
+networks:
+  rds-dashboard-network:
+    driver: bridge 
