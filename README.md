@@ -1,179 +1,247 @@
-# RDS Dashboard
+# 🚀 RDS Dashboard - AWS
 
-Un dashboard web para monitorear y gestionar instancias de Amazon RDS usando Django y AdminLTE.
+Un dashboard moderno y elegante para gestionar y monitorear instancias de Amazon RDS, construido con Django y Tailwind CSS.
 
-## Características
+## ✨ Características
 
-- 🔐 Conexión a múltiples perfiles de AWS
-- 📊 Visualización de instancias RDS con AdminLTE
-- 🔄 Actualización en tiempo real de datos
-- 📋 Tabla interactiva con DataTables
-- 📱 Diseño responsive
-- 🔍 Vista detallada de cada instancia
-- 🌐 Interfaz en español
+- **Interfaz Moderna**: Diseño limpio y responsive usando Tailwind CSS
+- **Gestión de RDS**: Visualización y gestión de instancias de Amazon RDS
+- **Autenticación**: Sistema de usuarios con registro y login
+- **Perfiles AWS**: Soporte para múltiples perfiles de AWS
+- **Dashboard Interactivo**: Tablas dinámicas con DataTables
+- **Notificaciones**: Alertas y notificaciones con SweetAlert2
+- **Responsive**: Diseño adaptativo para móviles y tablets
 
-## Requisitos Previos
+## 🎨 Diseño
 
-1. **Python 3.8+**
-2. **AWS CLI configurado** con perfiles locales
-3. **Credenciales de AWS** configuradas
+### Framework CSS: Tailwind CSS
+- **Versión**: 3.4.0
+- **Enfoque**: Utility-first CSS framework
+- **Ventajas**:
+  - Desarrollo más rápido
+  - Menor tamaño de archivos CSS
+  - Mayor flexibilidad en el diseño
+  - Mejor rendimiento
 
-## Instalación
+### Componentes Personalizados
+- Cards con sombras y efectos hover
+- Botones con gradientes y animaciones
+- Formularios con iconos integrados
+- Alertas y notificaciones estilizadas
+- Tablas responsivas
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone <url-del-repositorio>
-   cd rds_dashboard
-   ```
+## 🛠️ Tecnologías
 
-2. **Crear entorno virtual:**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # En Linux/Mac
-   # o
-   venv\Scripts\activate  # En Windows
-   ```
+### Backend
+- **Django 5.2.4**: Framework web de Python
+- **boto3**: SDK de AWS para Python
+- **SQLite**: Base de datos (desarrollo)
 
-3. **Instalar dependencias:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Frontend
+- **Tailwind CSS 3.4.0**: Framework CSS utility-first
+- **Font Awesome 6.0.0**: Iconos
+- **DataTables**: Tablas interactivas
+- **SweetAlert2**: Alertas y notificaciones
+- **jQuery**: Manipulación del DOM
 
-4. **Configurar AWS CLI (si no está configurado):**
-   ```bash
-   aws configure
-   # O para múltiples perfiles:
-   aws configure --profile nombre-perfil
-   ```
+### DevOps
+- **Docker**: Containerización
+- **Docker Compose**: Orquestación de contenedores
 
-## Configuración de AWS
+## 📦 Instalación
 
-### Configurar perfiles de AWS
+### Prerrequisitos
+- Python 3.11+
+- Docker y Docker Compose
+- AWS CLI configurado
 
-1. **Crear archivo de configuración:**
-   ```bash
-   mkdir -p ~/.aws
-   ```
+### Desarrollo Local
 
-2. **Configurar credenciales (~/.aws/credentials):**
-   ```ini
-   [default]
-   aws_access_key_id = TU_ACCESS_KEY
-   aws_secret_access_key = TU_SECRET_KEY
+1. **Clonar el repositorio**
+```bash
+git clone <repository-url>
+cd rds_inventory
+```
 
-   [perfil-desarrollo]
-   aws_access_key_id = TU_ACCESS_KEY_DESARROLLO
-   aws_secret_access_key = TU_SECRET_KEY_DESARROLLO
+2. **Instalar dependencias**
+```bash
+pip install -r requirements.txt
+```
 
-   [perfil-produccion]
-   aws_access_key_id = TU_ACCESS_KEY_PRODUCCION
-   aws_secret_access_key = TU_SECRET_KEY_PRODUCCION
-   ```
+3. **Configurar variables de entorno**
+```bash
+cp .env.example .env
+# Editar .env con tus configuraciones
+```
 
-3. **Configurar regiones (~/.aws/config):**
-   ```ini
-   [default]
-   region = us-east-1
-   output = json
+4. **Ejecutar migraciones**
+```bash
+python manage.py migrate
+```
 
-   [profile perfil-desarrollo]
-   region = us-west-2
-   output = json
+5. **Crear superusuario**
+```bash
+python manage.py createsuperuser
+```
 
-   [profile perfil-produccion]
-   region = eu-west-1
-   output = json
-   ```
+6. **Ejecutar el servidor**
+```bash
+python manage.py runserver
+```
 
-## Uso
+### Con Docker
 
-1. **Ejecutar el servidor de desarrollo:**
-   ```bash
-   python manage.py runserver
-   ```
+```bash
+# Desarrollo
+docker-compose up --build
 
-2. **Abrir en el navegador:**
-   ```
-   http://localhost:8000
-   ```
+# Producción
+docker-compose -f docker-compose.prod.yml up --build
+```
 
-3. **Seleccionar un perfil de AWS** del menú desplegable
+## 🎯 Uso
 
-4. **Ver las instancias de RDS** en la tabla
+1. **Acceder al dashboard**: `http://localhost:8000`
+2. **Registrarse o iniciar sesión**
+3. **Seleccionar perfil de AWS**
+4. **Explorar instancias de RDS**
+5. **Ver detalles de cada instancia**
 
-## Funcionalidades
-
-### Dashboard Principal
-- Selección de perfil de AWS
-- Lista de instancias RDS
-- Estado de cada instancia
-- Información básica (motor, clase, endpoint)
-
-### Vista Detallada
-- Información completa de cada instancia
-- Configuración de red
-- Almacenamiento
-- Configuración de seguridad
-- Grupos de seguridad
-
-### Características de la Tabla
-- Ordenamiento por columnas
-- Búsqueda
-- Paginación
-- Responsive design
-
-## Estructura del Proyecto
+## 📁 Estructura del Proyecto
 
 ```
-rds_dashboard/
-├── core/
-│   ├── views.py          # Vistas principales
-│   ├── models.py         # Modelos (si se necesitan)
-│   └── ...
-├── templates/
+rds_inventory/
+├── core/                    # Aplicación principal
+│   ├── models.py           # Modelos de datos
+│   ├── views.py            # Vistas de Django
+│   ├── auth_views.py       # Vistas de autenticación
+│   └── tests.py            # Tests
+├── templates/              # Templates HTML
 │   └── core/
-│       └── dashboard.html # Template principal
-├── static/               # Archivos estáticos
-├── rds_dashboard/
-│   ├── settings.py       # Configuración de Django
-│   └── urls.py          # URLs del proyecto
-└── requirements.txt     # Dependencias
+│       ├── dashboard.html  # Dashboard principal
+│       ├── instance_details.html
+│       └── auth/           # Templates de autenticación
+├── static/                 # Archivos estáticos
+│   ├── css/
+│   │   └── tailwind.css    # CSS principal con Tailwind
+│   ├── js/                 # JavaScript
+│   └── img/                # Imágenes
+├── rds_dashboard/          # Configuración de Django
+├── requirements.txt        # Dependencias de Python
+├── docker-compose.yml      # Configuración de Docker
+└── README.md              # Documentación
 ```
 
-## API Endpoints
+## 🎨 Personalización
 
-- `GET /` - Dashboard principal
-- `GET /api/rds-data/?profile=<nombre-perfil>` - Datos de RDS en formato JSON
+### Colores y Temas
+Los colores principales están definidos en `static/css/tailwind.css`:
 
-## Seguridad
+```css
+:root {
+    --primary-color: #3b82f6;    /* Azul principal */
+    --success-color: #10b981;    /* Verde */
+    --warning-color: #f59e0b;    /* Amarillo */
+    --danger-color: #ef4444;     /* Rojo */
+    --dark-color: #1e293b;       /* Gris oscuro */
+}
+```
 
-- Las credenciales de AWS se manejan localmente
-- No se almacenan credenciales en la base de datos
-- Usar perfiles de AWS para diferentes entornos
+### Componentes
+Los componentes están estilizados con clases de Tailwind y CSS personalizado:
 
-## Troubleshooting
+- **Cards**: `.card`, `.card-header`, `.card-body`
+- **Botones**: `.btn`, `.btn-primary`, `.btn-success`
+- **Formularios**: `.form-control`, `.form-label`
+- **Alertas**: `.alert`, `.alert-success`, `.alert-danger`
 
-### Error: "No se encontraron credenciales de AWS"
-- Verificar que AWS CLI esté configurado
-- Comprobar que el perfil seleccionado existe
-- Verificar permisos de las credenciales
+## 🔧 Configuración de AWS
 
-### Error: "Perfil no encontrado"
-- Verificar que el perfil esté en `~/.aws/config`
-- Comprobar la sintaxis del archivo de configuración
+1. **Instalar AWS CLI**
+```bash
+pip install awscli
+```
 
-### Error: "No se encontraron instancias de RDS"
-- Verificar que el perfil tenga permisos para RDS
-- Comprobar que existan instancias en la región configurada
+2. **Configurar credenciales**
+```bash
+aws configure
+```
 
-## Contribuir
+3. **Crear perfiles adicionales**
+```bash
+aws configure --profile mi-perfil
+```
 
-1. Fork el proyecto
-2. Crear una rama para tu feature
-3. Commit tus cambios
-4. Push a la rama
-5. Abrir un Pull Request
+## 🚀 Despliegue
 
-## Licencia
+### Producción con Docker
+```bash
+# Construir imagen de producción
+docker-compose -f docker-compose.prod.yml up -d --build
 
-Este proyecto está bajo la Licencia MIT. 
+# Verificar estado
+docker-compose -f docker-compose.prod.yml ps
+```
+
+### Variables de Entorno de Producción
+```bash
+SECRET_KEY=tu-clave-secreta-super-segura
+ALLOWED_HOSTS=tu-dominio.com,www.tu-dominio.com
+DEBUG=False
+```
+
+## 🧪 Testing
+
+```bash
+# Ejecutar tests
+python manage.py test
+
+# Tests con cobertura
+coverage run --source='.' manage.py test
+coverage report
+```
+
+## 📊 Monitoreo
+
+- **Logs**: Los logs se guardan en `/app/logs/`
+- **Health Checks**: Verificar estado con `docker ps`
+- **Métricas**: Monitorear recursos con `docker stats`
+
+## 🤝 Contribución
+
+1. Fork el repositorio
+2. Crear una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit tus cambios (`git commit -am 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Crear un Pull Request
+
+## 📝 Changelog
+
+### v2.0.0 - Migración a Tailwind CSS
+- ✅ Migrado de Bootstrap 4 a Tailwind CSS 3.4.0
+- ✅ Rediseño completo de la interfaz
+- ✅ Mejoras en la responsividad
+- ✅ Optimización del rendimiento
+- ✅ Nuevos componentes personalizados
+
+### v1.0.0 - Versión inicial
+- ✅ Dashboard básico con Bootstrap
+- ✅ Gestión de instancias RDS
+- ✅ Sistema de autenticación
+- ✅ Soporte para perfiles AWS
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+## 📞 Soporte
+
+Si tienes problemas o preguntas:
+
+1. Revisar la documentación
+2. Buscar en los issues existentes
+3. Crear un nuevo issue con detalles del problema
+
+---
+
+**Desarrollado con ❤️ usando Django y Tailwind CSS** 

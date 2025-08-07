@@ -1,0 +1,27 @@
+{
+  "name": "rds-dashboard",
+  "version": "2.0.0",
+  "description": "Dashboard moderno para gestionar instancias de Amazon RDS",
+  "scripts": {
+    "dev": "tailwindcss -i ./static/css/tailwind.css -o ./static/css/output.css --watch",
+    "build": "tailwindcss -i ./static/css/tailwind.css -o ./static/css/output.css --minify",
+    "watch": "tailwindcss -i ./static/css/tailwind.css -o ./static/css/output.css --watch"
+  },
+  "keywords": [
+    "django",
+    "tailwindcss",
+    "aws",
+    "rds",
+    "dashboard"
+  ],
+  "author": "RDS Dashboard Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "tailwindcss": "^3.4.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+} 

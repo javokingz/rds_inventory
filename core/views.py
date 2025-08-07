@@ -1,5 +1,7 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 import boto3
 import json
 from botocore.exceptions import ClientError, NoCredentialsError, ProfileNotFound
@@ -93,6 +95,7 @@ def get_rds_instances(profile_name):
     except Exception as e:
         return {'error': f'Error inesperado: {str(e)}'}
 
+@login_required
 def home(request):
     """Vista principal que muestra el dashboard de RDS"""
     profiles = get_aws_profiles()
@@ -115,6 +118,7 @@ def home(request):
     
     return render(request, 'core/dashboard.html', context)
 
+@login_required
 def get_rds_data_ajax(request):
     """Vista AJAX para obtener datos de RDS sin recargar la página"""
     profile_name = request.GET.get('profile')
@@ -193,6 +197,7 @@ def create_metric_chart(metric_data, title, ylabel, color='blue'):
     
     return base64.b64encode(image_png).decode()
 
+@login_required
 def instance_details(request, instance_id):
     """Vista para mostrar detalles de una instancia RDS con métricas de CloudWatch"""
     profile_name = request.GET.get('profile')
