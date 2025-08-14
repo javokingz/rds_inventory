@@ -1,0 +1,67 @@
+# Etapa de construcción
+FROM python:3.11-slim as builder
+
+# Instalar dependencias del sistema para compilación
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gcc \
+        g++ \
+        libc6-dev \
+        libffi-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libfreetype6-dev \
+        libxft-dev \
+        pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar requirements.txt
+COPY requirements.txt .
+
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Etapa de producción
+FROM python:3.11-slim
+
+# Instalar dependencias del sistema para producción
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        awscli \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar dependencias de Python desde la etapa de construcción
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copiar el código del proyecto
+COPY . .
+
+# Crear directorios necesarios
+RUN mkdir -p /app/staticfiles /app/logs
+
+# Crear usuario no-root
+RUN adduser --disabled-password --gecos '' appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
+# Exponer puerto
+EXPOSE 8000
+
+# Variables de entorno para producción
+ENV DJANGO_SETTINGS_MODULE=rds_dashboard.settings_prod
+ENV PYTHONUNBUFFERED=1
+
+# Script de inicio
+COPY --chown=appuser:appuser docker-entrypoint.sh /app/
+RUN chmod +x /app/docker-entrypoint.sh
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"] 

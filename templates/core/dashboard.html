@@ -4,102 +4,247 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RDS Dashboard - AWS</title>
+    {% load static %}
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
     <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+        .navbar {
+            background-color: #fff !important;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .sidebar {
+            background-color: #343a40;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            width: 250px;
+            transition: all 0.3s;
+        }
+        .sidebar.collapsed {
+            width: 60px;
+        }
+        .sidebar .brand-link {
+            color: #fff;
+            text-decoration: none;
+            padding: 1rem;
+            display: block;
+            border-bottom: 1px solid #4b545c;
+        }
+        .sidebar .brand-link:hover {
+            color: #fff;
+            text-decoration: none;
+        }
+        .sidebar .nav-link {
+            color: #c2c7d0;
+            padding: 0.75rem 1rem;
+            border-radius: 0;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: #494e53;
+        }
+        .sidebar .nav-link i {
+            margin-right: 0.5rem;
+            width: 20px;
+        }
+        .main-content {
+            margin-left: 0;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+            margin-bottom: 1rem;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.75rem 1.25rem;
+        }
+        .info-box {
+            background: #fff;
+            border-radius: 0.25rem;
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+            margin-bottom: 1rem;
+            min-height: 80px;
+            padding: 1rem;
+            position: relative;
+        }
+        .info-box-icon {
+            border-radius: 0.25rem;
+            display: block;
+            float: left;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            width: 50px;
+            font-size: 1.25rem;
+            color: #fff;
+        }
+        .info-box-content {
+            margin-left: 60px;
+        }
+        .info-box-text {
+            display: block;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+        .info-box-number {
+            display: block;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        .bg-danger { background-color: #dc3545 !important; }
+        .bg-warning { background-color: #ffc107 !important; }
+        .bg-info { background-color: #17a2b8 !important; }
+        .bg-success { background-color: #28a745 !important; }
+        .bg-primary { background-color: #007bff !important; }
+        .bg-secondary { background-color: #6c757d !important; }
+        
+        /* Estilos para el profile selection */
+        .profile-selection-card {
+            transition: all 0.3s ease;
+        }
+        .profile-selection-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+        }
+        .form-control-lg {
+            border-radius: 0.5rem;
+            border: 2px solid #e9ecef;
+            transition: border-color 0.3s ease;
+        }
+        .form-control-lg:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
-<body class="hold-transition sidebar-mini">
-    <div class="wrapper">
-        <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <!-- Left navbar links -->
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-                </li>
-            </ul>
-
-            <!-- Right navbar links -->
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
-                        <i class="fas fa-expand-arrows-alt"></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        <!-- /.navbar -->
-
-        <!-- Main Sidebar Container -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <!-- Brand Logo -->
-            <a href="/" class="brand-link">
-                <i class="fas fa-database brand-image img-circle elevation-3" style="opacity: .8"></i>
-                <span class="brand-text font-weight-light">RDS Dashboard</span>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
+        <div class="container-fluid">
+            <!-- Sidebar Toggle -->
+            <button class="btn btn-link d-lg-none" type="button" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Brand -->
+            <a class="navbar-brand d-none d-lg-block" href="/">
+                <i class="fas fa-database"></i> RDS Dashboard
             </a>
-
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <!-- Sidebar Menu -->
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item">
-                            <a href="/" class="nav-link active">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>Dashboard</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-                <!-- /.sidebar-menu -->
+            
+            <!-- Navigation Links -->
+            <div class="navbar-nav mr-auto">
+                <a class="nav-link" href="/">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+                <a class="nav-link" href="/admin/">
+                    <i class="fas fa-cog"></i> Administración
+                </a>
             </div>
-            <!-- /.sidebar -->
-        </aside>
-
-        <!-- Content Wrapper. Contains page content -->
-        <div class="content-wrapper">
-            <!-- Content Header (Page header) -->
-            <section class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
-                        <div class="col-sm-6">
-                            <h1>Dashboard de RDS</h1>
+            
+            <!-- Right Side -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img src="{% static 'img/Openbank.jpg' %}" alt="Logo" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
+                        <span class="ml-2">{{ user.username }}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                        <div class="dropdown-header">
+                            <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
                         </div>
-                        <div class="col-sm-6">
-                            <ol class="breadcrumb float-sm-right">
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'profile' %}">
+                            <i class="fas fa-user-circle"></i> Mi Perfil
+                        </a>
+                        <a class="dropdown-item" href="{% url 'change_password' %}">
+                            <i class="fas fa-key"></i> Cambiar Contraseña
+                        </a>
+                        <a class="dropdown-item" href="/admin/">
+                            <i class="fas fa-cog"></i> Administración
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+   
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Content Header -->
+        <div class="container-fluid mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h1 class="h3 mb-0">Dashboard de RDS</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
                                 <li class="breadcrumb-item"><a href="/">Inicio</a></li>
                                 <li class="breadcrumb-item active">RDS</li>
                             </ol>
-                        </div>
+                        </nav>
                     </div>
                 </div>
-            </section>
+            </div>
+        </div>
 
-            <!-- Main content -->
-            <section class="content">
-                <div class="container-fluid">
+        <!-- Main content -->
+        <div class="container-fluid mt-4">
                     <!-- Profile Selection -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-12 col-md-10 col-sm-12">
+                            <div class="card shadow profile-selection-card">
+                                <div class="card-header bg-primary text-white">
+                                    <h3 class="card-title mb-0">
                                         <i class="fas fa-user-cog"></i> Seleccionar la cuenta de AWS
                                     </h3>
                                 </div>
                                 <div class="card-body">
                                     <form method="get" id="profileForm">
                                         <div class="form-group">
-                                            <label for="profile">Perfil de AWS:</label>
-                                            <select class="form-control" id="profile" name="profile" onchange="this.form.submit()">
+                                            <label for="profile" class="font-weight-bold">
+                                                <i class="fas fa-cloud"></i> Perfil de AWS:
+                                            </label>
+                                            <select class="form-control form-control-lg" id="profile" name="profile" onchange="this.form.submit()">
                                                 <option value="">Selecciona un perfil...</option>
                                                 {% for profile in profiles %}
                                                 <option value="{{ profile }}" {% if profile == selected_profile %}selected{% endif %}>
@@ -107,6 +252,9 @@
                                                 </option>
                                                 {% endfor %}
                                             </select>
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle"></i> Selecciona el perfil de AWS que deseas monitorear
+                                            </small>
                                         </div>
                                     </form>
                                 </div>
@@ -224,15 +372,21 @@
                     </div>
                     {% endif %}
                 </div>
-            </section>
+            </div>
         </div>
 
         <!-- Footer -->
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-inline">
-                RDS Dashboard v1.0
+        <footer class="bg-white border-top mt-5 py-3">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>Copyright &copy; 2024</strong>
+                            <span>RDS Dashboard v1.0</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <strong>Copyright &copy; 2024</strong> Todos los derechos reservados.
         </footer>
     </div>
 
@@ -260,8 +414,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Bootstrap 4 -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- AdminLTE App -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
     <!-- DataTables -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
@@ -278,6 +430,24 @@
                 "responsive": true,
                 "autoWidth": false
             });
+        });
+
+        // Función para toggle del sidebar en móviles
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
+        }
+
+        // Cerrar sidebar al hacer click fuera en móviles
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.querySelector('[onclick="toggleSidebar()"]');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+                    sidebar.classList.remove('show');
+                }
+            }
         });
 
         function showInstanceDetails(instanceId, instanceData) {
@@ -356,6 +526,23 @@
                 .fail(function() {
                     Swal.fire('Error', 'No se pudo actualizar los datos', 'error');
                 });
+        }
+
+        function logout() {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: '¿Estás seguro de que quieres cerrar sesión?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{% url 'logout' %}";
+                }
+            });
         }
     </script>
 </body>
