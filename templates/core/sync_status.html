@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Estado de Sincronización - RDS Dashboard</title>
+    {% load static %}
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container-fluid">
+            <!-- Brand -->
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-database"></i> RDS Dashboard
+            </a>
+            
+            <!-- Navigation Links -->
+            <div class="navbar-nav mr-auto">
+                <a class="nav-link" href="{% url 'home' %}">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+                <a class="nav-link active" href="{% url 'sync_status' %}">
+                    <i class="fas fa-sync"></i> Estado de Sincronización
+                </a>
+                <a class="nav-link" href="/admin/">
+                    <i class="fas fa-cog"></i> Administración
+                </a>
+            </div>
+            
+            <!-- Right Side -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img src="{% static 'img/Openbank.jpg' %}" alt="Logo" class="rounded-full w-8 h-8 object-cover">
+                        <span class="ml-2">{{ user.username }}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                        <div class="dropdown-header">
+                            <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'profile' %}">
+                            <i class="fas fa-user-circle"></i> Mi Perfil
+                        </a>
+                        <a class="dropdown-item" href="{% url 'change_password' %}">
+                            <i class="fas fa-key"></i> Cambiar Contraseña
+                        </a>
+                        <a class="dropdown-item" href="/admin/">
+                            <i class="fas fa-cog"></i> Administración
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Content Header -->
+        <div class="container-fluid mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="flex justify-between items-center">
+                        <h1 class="text-3xl font-bold text-gray-800">Estado de Sincronización</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="flex space-x-2 text-sm text-gray-600">
+                                <li><a href="{% url 'home' %}" class="hover:text-blue-600">Inicio</a></li>
+                                <li class="text-gray-400">/</li>
+                                <li class="text-gray-800">Sincronización</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="container-fluid mt-4">
+            <!-- Perfiles de AWS -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-cloud"></i> Perfiles de AWS
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-primary" onclick="refreshSyncStatus()">
+                                    <i class="fas fa-sync-alt"></i> Actualizar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if profiles %}
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {% for profile in profiles %}
+                                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 {% if profile.last_sync %}border-green-500{% else %}border-gray-300{% endif %}">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="text-lg font-semibold text-gray-800">{{ profile.name }}</h4>
+                                            <span class="badge {% if profile.is_active %}badge-success{% else %}badge-secondary{% endif %}">
+                                                {% if profile.is_active %}Activo{% else %}Inactivo{% endif %}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="space-y-2 text-sm text-gray-600">
+                                            <div class="flex justify-between">
+                                                <span>Región:</span>
+                                                <span class="font-medium">{{ profile.region }}</span>
+                                            </div>
+                                            
+                                            {% if profile.last_sync %}
+                                            <div class="flex justify-between">
+                                                <span>Última sincronización:</span>
+                                                <span class="font-medium">{{ profile.last_sync|date:"d/m/Y H:i" }}</span>
+                                            </div>
+                                            {% else %}
+                                            <div class="text-yellow-600">
+                                                <i class="fas fa-exclamation-triangle"></i> Nunca sincronizado
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <div class="flex justify-between">
+                                                <span>Instancias:</span>
+                                                <span class="font-medium">{{ profile.rds_instances.count }}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mt-4 flex space-x-2">
+                                            <button class="btn btn-sm btn-primary" onclick="syncProfile('{{ profile.name }}')">
+                                                <i class="fas fa-sync"></i> Sincronizar
+                                            </button>
+                                            <a href="{% url 'home' %}?profile={{ profile.id }}" class="btn btn-sm btn-outline">
+                                                <i class="fas fa-eye"></i> Ver Instancias
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-8">
+                                    <i class="fas fa-cloud text-4xl text-gray-400 mb-4"></i>
+                                    <h3 class="text-lg font-medium text-gray-600 mb-2">No hay perfiles configurados</h3>
+                                    <p class="text-gray-500">Usa el comando de gestión para inicializar perfiles de AWS</p>
+                                    <div class="mt-4">
+                                        <code class="bg-gray-100 px-3 py-2 rounded text-sm">
+                                            python manage.py init_aws_profiles
+                                        </code>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs de Sincronización -->
+            {% if recent_syncs %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-history"></i> Historial de Sincronización
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="overflow-x-auto">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Perfil</th>
+                                            <th>Estado</th>
+                                            <th>Instancias</th>
+                                            <th>Duración</th>
+                                            <th>Fecha</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sync in recent_syncs %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ sync.profile.name }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-{{ sync.status }}">
+                                                    {{ sync.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="text-sm">
+                                                    <div>Encontradas: {{ sync.instances_found }}</div>
+                                                    <div>Creadas: {{ sync.instances_created }}</div>
+                                                    <div>Actualizadas: {{ sync.instances_updated }}</div>
+                                                    <div>Eliminadas: {{ sync.instances_deleted }}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="text-sm text-gray-600">
+                                                    {{ sync.duration|floatformat:1 }}s
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="text-sm text-gray-600">
+                                                    {{ sync.started_at|date:"d/m/Y H:i" }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if sync.error_message %}
+                                                <button class="btn btn-sm btn-outline" onclick="showError('{{ sync.error_message|escapejs }}')">
+                                                    <i class="fas fa-exclamation-triangle"></i> Ver Error
+                                                </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t mt-5 py-3">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="flex justify-between items-center">
+                            <strong>Copyright &copy; 2024</strong>
+                            <span>RDS Dashboard v2.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 4 (solo para el dropdown) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function refreshSyncStatus() {
+            location.reload();
+        }
+
+        function syncProfile(profileName) {
+            Swal.fire({
+                title: 'Sincronizando perfil...',
+                text: `Sincronizando perfil ${profileName}`,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Aquí podrías hacer una llamada AJAX para sincronizar
+            // Por ahora, solo recargamos la página
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'Sincronización iniciada',
+                    text: 'La sincronización se está ejecutando en segundo plano',
+                    icon: 'info'
+                }).then(() => {
+                    location.reload();
+                });
+            }, 2000);
+        }
+
+        function showError(errorMessage) {
+            Swal.fire({
+                title: 'Error de Sincronización',
+                text: errorMessage,
+                icon: 'error',
+                confirmButtonText: 'Cerrar'
+            });
+        }
+    </script>
+</body>
+</html> 

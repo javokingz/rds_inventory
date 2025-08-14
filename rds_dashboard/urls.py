@@ -9,10 +9,8 @@ Function views
     2. Add a URL to urlpatterns:  path('', views.home, name='home')
 Class-based views
     1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+    2. Import the include() function: from django.urls import include, path
+    3. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
 from django.urls import path
@@ -38,4 +36,7 @@ urlpatterns = [
     path('', views.home, name="home"),
     path('api/rds-data/', views.get_rds_data_ajax, name="rds_data_ajax"),
     path('instance/<str:instance_id>/', views.instance_details, name="instance_details"),
+    
+    # Nuevas rutas para el sistema de base de datos
+    path('sync-status/', views.sync_status, name="sync_status"),
 ]
